@@ -1,15 +1,93 @@
 package com.board.boardpractice.domain;
 
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
+import java.util.Objects;
+import java.util.Set;
 
+
+// @EntityListeners : 엔티티의 변화(삽입, 삭제, 수정, 조회)를 감지하고 테이블의 데이터를 조작하는 일을 함
+// AuditingEntityListener : 시간에 대해서 자동으로 값을 넣어주는 기능 (create_At, modified_At)
+
+@Getter
+@ToString
+@Table(indexes = {
+        @Index(columnList = "title"),
+        @Index(columnList = "hashtag"),
+        @Index(columnList = "createdAt"),
+        @Index(columnList = "createdBy")
+})
+@EntityListeners(AuditingEntityListener.class)
+@Entity
 public class Article {
-    private Long id;
-    private String title;               // 제목
-    private String content;             // 본문
-    private String hashtag;             // 해시태그
 
-    private LocalDateTime createdAt;    // 생성 일시
-    private String createdBy;           // 생성자
+    // id나 메타데이터의 경우 변경하면 안되는 값 이기 때문에 setter 를 제외함
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+
+    @Setter
+    @Column(nullable = false)
+    private String title; // 제목
+    @Setter
+    @Column(nullable = false, length = 10000)
+    private String content;   // 본문
+    @Setter
+    private String hashtag; // 해시태그
+
+
+    @ToString.Exclude   // 순환참조 무한굴레 끊기
+    @OrderBy("id")
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
+    private final Set<ArticleComment> articleComments = new LinkedHashSet<>();
+
+    @CreatedDate
+    @Column(nullable = false)
+    private LocalDateTime createdAt; // 생성 일시
+    @CreatedBy
+    @Column(nullable = false, length = 100)
+    private String createdBy;    // 생성자
+    @LastModifiedDate
+    @Column(nullable = false)
     private LocalDateTime modifiedAt;   // 수정 일시
-    private String modifiedBy;          // 수정자
+    @LastModifiedBy
+    @Column(nullable = false, length = 100)
+    private String modifiedBy;  // 수정자
+
+    protected Article() {
+    }
+
+    private Article(String title, String content, String hashtag) {
+        this.title = title;
+        this.content = content;
+        this.hashtag = hashtag;
+    }
+
+    public static Article of(String title, String content, String hashtag) {
+        return new Article(title, content, hashtag);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Article article)) return false;      // pattern variable 방식
+        return id != null && id.equals(article.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }
