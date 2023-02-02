@@ -12,8 +12,11 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: trace
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/board
-    hikari:
+#    url: jdbc:h2:mem:testdb
+#    username: sa
+#    driver-class-name: org.h2.Driver
+#    테스트 DB 사용 시 설정 1
+      url: jdbc:mysql://localhost:3306/board
       username: hyejin
       password: leean0702
       driver-class-name: com.mysql.cj.jdbc.Driver
@@ -27,9 +30,10 @@ spring:
       hibernate:
         format_sql: true
         default_batch_fetch_size: 100
-  h2:
-    console:
-      enabled: false
+#  h2:
+#    console:
+#      enabled: true
+#    테스트 DB 사용 시 설정 2
   sql:
     init:
       mode: always

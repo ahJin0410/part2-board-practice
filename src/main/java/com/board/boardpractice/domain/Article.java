@@ -27,16 +27,13 @@ import java.util.Set;
         @Index(columnList = "createdAt"),
         @Index(columnList = "createdBy")
 })
-@EntityListeners(AuditingEntityListener.class)
 @Entity
-public class Article {
+public class Article extends AuditingFields{
 
     // id나 메타데이터의 경우 변경하면 안되는 값 이기 때문에 setter 를 제외함
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
 
     @Setter
     @Column(nullable = false)
@@ -47,24 +44,10 @@ public class Article {
     @Setter
     private String hashtag; // 해시태그
 
-
     @ToString.Exclude   // 순환참조 무한굴레 끊기
     @OrderBy("id")
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
     private final Set<ArticleComment> articleComments = new LinkedHashSet<>();
-
-    @CreatedDate
-    @Column(nullable = false)
-    private LocalDateTime createdAt; // 생성 일시
-    @CreatedBy
-    @Column(nullable = false, length = 100)
-    private String createdBy;    // 생성자
-    @LastModifiedDate
-    @Column(nullable = false)
-    private LocalDateTime modifiedAt;   // 수정 일시
-    @LastModifiedBy
-    @Column(nullable = false, length = 100)
-    private String modifiedBy;  // 수정자
 
     protected Article() {
     }
